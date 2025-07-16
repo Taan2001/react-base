@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosRequestHeaders, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { getEnvVar } from '../utils/helpers';
 
 /**
@@ -18,26 +18,26 @@ export const createInstance = (baseURL?: string): AxiosInstance => {
 
   // Configure the request interceptors of axios instance
   instance.interceptors.request.use(
-    async (config) => {
+    async (config: InternalAxiosRequestConfig) => {
       // get token
       const token = undefined;
 
       // if token is not null, set the Authorization header
       if (token) {
         // set the Authorization header
-        (config.headers as AxiosRequestHeaders).Authorization = `Bearer ${token}`;
+        config.headers.Authorization = `Bearer ${token}`;
       }
 
       return config;
     },
-    (error) => Promise.reject(error),
+    (error) => Promise.reject(error instanceof Error ? error : new Error(String(error))),
   );
 
   // Configure the response interceptors of axios instance
   instance.interceptors.response.use(
-    (response) => response,
+    (response: AxiosResponse) => response,
     (error) => {
-      return Promise.reject(error);
+      return Promise.reject(error instanceof Error ? error : new Error(String(error)));
     },
   );
   return instance;
